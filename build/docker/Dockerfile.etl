@@ -1,0 +1,23 @@
+# Base Image
+FROM python:3.7-slim AS compile-image
+RUN mkdir -p /var/www/app && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends build-essential gcc git && \
+    rm -rf /var/lib/apt/lists/ && \
+    python -m venv /var/www/app/venv
+
+ENV PATH="/var/www/app/venv/bin:$PATH"
+
+COPY ./etl/requirements.txt .
+RUN pip install -r requirements.txt --no-cache-dir --compile && \
+    rm requirements.txt 
+
+# App Image
+FROM python:3.7-slim AS build-image
+
+COPY --from=compile-image /var/www/app/venv /var/www/app/venv
+COPY ./etl /var/www/app/
+WORKDIR /var/www/app/
+
+ENV PATH="/var/www/app/venv/bin:$PATH"
+CMD ["venv/bin/python", "extract.py", "--file", "data/data.parquet.gzip"]

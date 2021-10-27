@@ -1,0 +1,13 @@
+version: "3"
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: ./build/docker/Dockerfile.api
+    image: localhost:5000/api:latest
+    container_name: api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    ports:
+      - 8000:8000
+    volumes:
+      - ../../data:/var/www/app/data

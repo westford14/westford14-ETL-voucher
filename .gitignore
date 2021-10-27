@@ -1,0 +1,18 @@
+## Virtualenvs 
+venv/
+
+## Mac Files
+*.DS_Store
+*._.DS_Store
+
+## Cache 
+__pycache__/
+
+## Editors
+.vscode/
+
+## Testing 
+.pytest_cache/
+
+## Notebooks
+.ipynb_checkpoints/

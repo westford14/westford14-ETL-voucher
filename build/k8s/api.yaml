@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 10%
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      volumes:
+      - name: localdata 
+        hostPath:
+          path: /var/www/app/data
+      containers:
+        - name: api
+          volumeMounts:
+          - name: localdata
+            mountPath: /var/www/app/data
+          image: localhost:5000/api:latest
+          imagePullPolicy: IfNotPresent 
+          resources:
+            limits:
+              memory: 3Gi
+              cpu: "1500m"
+            requests:
+              memory: 256Mi
+              cpu: "250m"
+          ports:
+          - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 30
+            initialDelaySeconds: 30
+            timeoutSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 30
+            initialDelaySeconds: 30
+            timeoutSeconds: 15
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  type: ClusterIP
+  selector:
+    app: api
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

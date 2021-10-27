@@ -1,0 +1,14 @@
+version: "3"
+services:
+  tests:
+    build:
+      context: ../..
+      dockerfile: ./build/docker/Dockerfile.test
+    image: localhost:5000/api-etl-tests:latest
+    container_name: etl_api_test
+    command: venv/bin/python -m pytest tests etl_tests -v --disable-pytest-warnings
+    ports:
+      - 8000:8000
+    volumes:
+      - ../../data:/var/www/app/data
+      - ../../etl/etl_tests/fixtures:/var/www/app/fixtures

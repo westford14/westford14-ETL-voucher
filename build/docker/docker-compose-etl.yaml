@@ -1,0 +1,11 @@
+version: "3"
+services:
+  etl_pipeline:
+    build:
+      context: ../..
+      dockerfile: ./build/docker/Dockerfile.etl
+    image: localhost:5000/etl-pipeline:latest
+    container_name: etl-pipeline
+    command: venv/bin/python extract.py --file data/data.parquet.gzip
+    volumes:
+      - ../../data:/var/www/app/data

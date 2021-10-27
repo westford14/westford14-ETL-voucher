@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etl-pipeline
+spec:
+  schedule: "10 10 * * *"
+  concurrencyPolicy: Allow
+  startingDeadlineSeconds: 100
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+          - name: localdata 
+            hostPath:
+              path: /var/www/app/data
+          containers:
+          - name: etl-pipeline
+            volumeMounts:
+            - name: localdata
+              mountPath: /var/www/app/data
+            image: localhost:5000/etl-pipeline:latest
+            imagePullPolicy: IfNotPresent 
+          restartPolicy: OnFailure
+  

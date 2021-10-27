@@ -1,0 +1,25 @@
+# Base Image
+FROM python:3.7-slim AS compile-image
+RUN mkdir -p /var/www/app && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends build-essential gcc git && \
+    rm -rf /var/lib/apt/lists/ && \
+    python -m venv /var/www/app/venv
+
+ENV PATH="/var/www/app/venv/bin:$PATH"
+
+COPY ./api/requirements.txt .
+RUN pip install -r requirements.txt --no-cache-dir --compile && \
+    rm requirements.txt 
+
+# App Image
+FROM python:3.7-slim AS build-image
+
+COPY --from=compile-image /var/www/app/venv /var/www/app/venv
+COPY ./api /var/www/app
+WORKDIR /var/www/app/
+
+EXPOSE 8000
+
+ENV PATH="/var/www/app/venv/bin:$PATH"
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
